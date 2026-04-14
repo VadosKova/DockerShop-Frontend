@@ -9,15 +9,15 @@ export const translations = {
     add: "Add",
     logout: "Logout"
   },
-  uk: {
-    login: "Вхід",
-    register: "Реєстрація",
-    products: "Товари",
-    cart: "Кошик",
-    orders: "Замовлення",
-    admin: "Адмін панель",
-    add: "Додати",
-    logout: "Вийти"
+  ru: {
+    login: "Вход",
+    register: "Регистрация",
+    products: "Товары",
+    cart: "Корзина",
+    orders: "Заказы",
+    admin: "Админ панель",
+    add: "Добавить",
+    logout: "Выйти"
   }
 };
 
