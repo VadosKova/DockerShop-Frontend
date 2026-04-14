@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import API from "../api/api";
+import instance from "../api/api";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
@@ -9,7 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   const login = async () => {
-    const res = await API.post("/auth/login", { email, password });
+    const res = await instance.post("/auth/login", { email, password });
 
     localStorage.setItem("token", res.data.token);
 
