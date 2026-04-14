@@ -1,5 +1,6 @@
 export const translations = {
   en: {
+    change_language: "Lang",
     login: "Login",
     register: "Register",
     products: "Products",
@@ -10,6 +11,7 @@ export const translations = {
     logout: "Logout"
   },
   ru: {
+    change_language: "Язык",
     login: "Вход",
     register: "Регистрация",
     products: "Товары",
@@ -23,5 +25,5 @@ export const translations = {
 
 export const t = (key) => {
   const lang = localStorage.getItem("lang") || "en";
-  return translations[lang][key];
+  return translations[lang][key] || key;
 };
