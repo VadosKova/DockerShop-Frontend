@@ -9,7 +9,7 @@ import Orders from "./pages/Orders";
 import Admin from "./pages/Admin";
 
 import Navbar from "./components/Navbar";
-import ProtectedRoute from "./components/ProtectedRoute";
+import PrivateRoute from "./components/PrivateRoute";
 
 import AuthProvider from "./context/AuthContext";
 import CartProvider from "./context/CartContext";
@@ -31,15 +31,15 @@ export default function App() {
             <Route path="/cart" element={<Cart />} />
             
             <Route path="/orders" element={
-              <ProtectedRoute>
+              <PrivateRoute>
                 <Orders />
-              </ProtectedRoute>
+              </PrivateRoute>
             } />
 
             <Route path="/admin" element={
-              <ProtectedRoute role="admin">
+              <PrivateRoute role="admin">
                 <Admin />
-              </ProtectedRoute>
+              </PrivateRoute>
             } />
           </Routes>
         </BrowserRouter>
