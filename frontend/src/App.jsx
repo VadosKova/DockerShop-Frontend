@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Navbar } from './components/Navbar';
-import { Catalog } from './pages/Catalog';
-import { ProductDetails } from './pages/ProductDetails';
-import { Login } from './pages/Login';
-import { AdminPanel } from './pages/AdminPanel';
-import { Orders } from './pages/Orders';
-import { PrivateRoute } from './components/PrivateRoute';
+import Navbar from "./components/Navbar";
+import Catalog from "./pages/Catalog";
+import ProductDetails from "./pages/ProductDetails";
+import Login from "./pages/Login";
+import AdminPanel from "./pages/AdminPanel";
+import Orders from "./pages/Orders";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
