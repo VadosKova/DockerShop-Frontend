@@ -1,8 +1,9 @@
 export const translations = {
   en: {
-    change_language: "Lang",
     login: "Login",
     register: "Register",
+    email: "Email",
+    password: "Password",
     products: "Products",
     cart: "Cart",
     orders: "Orders",
@@ -10,16 +11,17 @@ export const translations = {
     add: "Add",
     logout: "Logout"
   },
-  ru: {
-    change_language: "Язык",
-    login: "Вход",
-    register: "Регистрация",
-    products: "Товары",
-    cart: "Корзина",
-    orders: "Заказы",
-    admin: "Админ панель",
-    add: "Добавить",
-    logout: "Выйти"
+  uk: {
+    login: "Вхід",
+    register: "Реєстрація",
+    email: "Пошта",
+    password: "Пароль",
+    products: "Товари",
+    cart: "Кошик",
+    orders: "Замовлення",
+    admin: "Адмін панель",
+    add: "Додати",
+    logout: "Вийти"
   }
 };
 
