@@ -1,49 +1,109 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, LayoutDashboard, Globe } from 'lucide-react';
-import { t } from '../i18n/i18n';
+import { useApp } from "../context/AppContext";
+import { t } from "../i18n/i18n";
 
 export default function Navbar() {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const lang = localStorage.getItem("lang") || "en";
+  const { user, setUser, setCart, toggleLang, page, setPage, cart } = useApp();
+
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
   const logout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
-  const toggleLang = () => {
-    localStorage.setItem("lang", lang === "en" ? "ru" : "en");
-    window.location.reload();
+    localStorage.removeItem("token");
+    setUser(null);
+    setCart([]);
+    setPage("products");
   };
 
   return (
-    <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
-      <Link to="/" className="text-2xl font-black text-indigo-600 tracking-tighter">DOCKERSHOP</Link>
-      
-      <div className="flex items-center gap-6 text-sm font-medium">
-        <button onClick={toggleLang} className="flex items-center gap-1 hover:text-indigo-600 uppercase">
-          <Globe size={16}/> {lang}
+    <nav className="navbar">
+      <button className="navbar__logo" onClick={() => setPage("products")}>
+        <span className="navbar__logo-icon">⚜</span>
+        <span className="navbar__logo-text">Maison</span>
+      </button>
+
+      <div className="navbar__nav">
+        <NavLink
+          label={t("products")}
+          active={page === "products"}
+          onClick={() => setPage("products")}
+        />
+
+        {user?.role === "customer" && (
+          <>
+            <NavLink
+              label={cartCount > 0 ? `${t("cart")} (${cartCount})` : t("cart")}
+              active={page === "cart"}
+              onClick={() => setPage("cart")}
+            />
+            <NavLink
+              label={t("my_orders")}
+              active={page === "my_orders"}
+              onClick={() => setPage("my_orders")}
+            />
+          </>
+        )}
+
+        {user?.role === "admin" && (
+          <>
+            <NavLink
+              label={t("add_product")}
+              active={page === "admin_products"}
+              onClick={() => setPage("admin_products")}
+            />
+            <NavLink
+              label={t("manage_orders")}
+              active={page === "admin_orders"}
+              onClick={() => setPage("admin_orders")}
+            />
+          </>
+        )}
+      </div>
+
+      <div className="navbar__right">
+        <button className="btn-lang" onClick={toggleLang}>
+          {t("change_lang")}
         </button>
 
         {user ? (
           <>
-            <Link to="/" className="hover:text-indigo-600">{t('products')}</Link>
-            <Link to="/orders" className="hover:text-indigo-600">{t('orders')}</Link>
-            {user.role === 'admin' && (
-              <Link to="/admin" className="flex items-center gap-1 text-red-500 hover:text-red-600">
-                <LayoutDashboard size={18}/> {t('admin')}
-              </Link>
-            )}
-            <button onClick={logout} className="text-gray-400 hover:text-gray-600"><LogOut size={20}/></button>
+            <span className="navbar__user">
+              {t("hello")},{" "}
+              <strong>{user.email.split("@")[0]}</strong>
+              {user.role === "admin" && (
+                <span className="badge-admin">ADMIN</span>
+              )}
+            </span>
+            <button className="btn btn-outline btn-sm" onClick={logout}>
+              {t("logout")}
+            </button>
           </>
         ) : (
-          <div className="flex gap-4">
-            <Link to="/login" className="hover:text-indigo-600">{t('login')}</Link>
-            <Link to="/register" className="bg-indigo-600 text-white px-4 py-2 rounded-lg">{t('register')}</Link>
-          </div>
+          <>
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() => setPage("login")}
+            >
+              {t("login")}
+            </button>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => setPage("register")}
+            >
+              {t("register")}
+            </button>
+          </>
         )}
       </div>
     </nav>
   );
-};
+}
+
+function NavLink({ label, active, onClick }) {
+  return (
+    <button
+      className={`navbar__link${active ? " active" : ""}`}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
