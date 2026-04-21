@@ -27,7 +27,7 @@ export default function Orders() {
       {orders.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state__icon">◇</div>
-          <p>No orders yet</p>
+          <p>{t("no_orders_yet")}</p>
         </div>
       ) : (
         <div className="orders-list">
@@ -36,7 +36,7 @@ export default function Orders() {
               <div className="order-card__header">
                 <div className="order-card__id">
                   <span className="order-card__label">{t("order_id")}</span>
-                  <span className="order-card__code">#{order._id.slice(-8).toUpperCase()}</span>
+                  <span className="order-card__code">: #{order._id.slice(-8).toUpperCase()}</span>
                 </div>
                 <div
                   className="order-status-badge"

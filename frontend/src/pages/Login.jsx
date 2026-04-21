@@ -29,12 +29,6 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-      <div className="auth-deco">
-        <div className="auth-deco__circle auth-deco__circle--1" />
-        <div className="auth-deco__circle auth-deco__circle--2" />
-        <div className="auth-deco__circle auth-deco__circle--3" />
-        <div className="auth-deco__text">DockerShop</div>
-      </div>
       <div className="auth-card">
         <h1 className="auth-card__title">{t("login")}</h1>
 

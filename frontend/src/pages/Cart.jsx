@@ -31,7 +31,7 @@ export default function Cart() {
         <div className="success-state">
           <div className="success-state__icon">✓</div>
           <h2>{t("order_placed")}</h2>
-          <p>Redirecting to your orders…</p>
+          <p>{t("redirecting_orders")}</p>
         </div>
       </div>
     );

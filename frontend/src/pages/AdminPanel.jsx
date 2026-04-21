@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api/api";
-import { t } from "../i18n/i18n";
+import { t, tCategory } from "../i18n/i18n";
 import { useAuth } from "../context/AppContext";
 
 const STATUS_OPTIONS = ["Pending", "Paid", "Cancelled"];
@@ -185,7 +185,7 @@ export default function AdminPanel() {
           ) : (
             <div className="table">
               <div className="table-head">
-                <span>Title</span><span>Category</span><span>Price</span><span>Actions</span>
+                <span>{t("title")}</span><span>{t("category")}</span><span>{t("price")}</span><span>{t("actions")}</span>
               </div>
               {products.map((p) => (
                 <div key={p._id} className="table-row">
