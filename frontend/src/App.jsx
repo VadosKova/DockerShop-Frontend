@@ -49,13 +49,14 @@ const App = () => {
 
         <main className="container mx-auto p-6">
           <Routes>
-            <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" />} />
-            <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+            <Route path="/login" element={<Login setUser={setUser} />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/" element={user ? <Catalog /> : <Navigate to="/login" />} />
             <Route path="/product/:id" element={user ? <ProductDetail /> : <Navigate to="/login" />} />
             <Route path="/cart" element={user ? <Cart /> : <Navigate to="/login" />} />
             <Route path="/orders" element={user ? <Orders /> : <Navigate to="/login" />} />
             <Route path="/admin" element={user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" />} />
+            <Route path="*" element={<Navigate to={user ? "/" : "/login"} />} />
           </Routes>
         </main>
       </div>
