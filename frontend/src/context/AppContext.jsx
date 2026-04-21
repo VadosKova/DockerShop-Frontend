@@ -44,7 +44,6 @@ export function AuthProvider({ children }) {
 
 export const useAuth = () => useContext(AuthContext);
 
-// --- Cart Context ---
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
