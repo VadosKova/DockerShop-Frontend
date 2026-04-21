@@ -1,3 +1,4 @@
+import { useAuth } from "../context/AppContext";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/api";
@@ -19,6 +20,10 @@ export default function ProductDetail() {
   const [added, setAdded] = useState(false);
   const { addItem } = useCart();
 
+  const { lang } = useAuth();
+  const getTitle = (p) => lang === "uk" && p.title_uk ? p.title_uk : p.title;
+  const getDesc = (p) => lang === "uk" && p.description_uk ? p.description_uk : p.description;
+
   useEffect(() => {
     api.get(`/products/${id}`)
       .then((res) => setProduct(res.data))
@@ -34,7 +39,7 @@ export default function ProductDetail() {
   if (loading) return <div className="page-loading"><div className="spinner-lg" /></div>;
   if (!product) return <div className="page-loading"><p>Product not found</p></div>;
 
-  const color = getColor(product.title || "x");
+  const color = getColor(getTitle(product) || "x");
 
   return (
     <div className="detail-page">
@@ -49,8 +54,8 @@ export default function ProductDetail() {
 
         <div className="detail-card__info">
           <div className="detail-card__badge">{t("in_stock")}</div>
-          <h1 className="detail-card__title">{product.title}</h1>
-          <p className="detail-card__desc">{product.description}</p>
+          <h1 className="detail-card__title">{getTitle(product)}</h1>
+          <p className="detail-card__desc">{getDesc(product)}</p>
 
           <div className="detail-card__meta">
             <div className="detail-meta-item">
