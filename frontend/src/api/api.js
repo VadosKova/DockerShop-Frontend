@@ -1,13 +1,15 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: "http://localhost:3000" });
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-api.interceptors.request.use((cfg) => {
+const instance = axios.create({ baseURL: API_URL });
+
+instance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  const lang  = localStorage.getItem("lang") || "en";
-  if (token) cfg.headers.Authorization = `Bearer ${token}`;
-  cfg.headers["Accept-Language"] = lang;
-  return cfg;
+  const lang = localStorage.getItem("lang") || "en";
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  config.headers["Accept-Language"] = lang;
+  return config;
 });
 
-export default api;
+export default instance;

@@ -1,48 +1,77 @@
-import React, { useState } from 'react';
-import API from '../api/api';
-import { Link } from 'react-router-dom';
-import { t } from '../i18n/i18n';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../api/api";
+import { useAuth } from "../context/AppContext";
+import { t } from "../i18n/i18n";
 
-export default function Login({ setUser }) {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
-      const { data } = await API.post('/auth/login', form);
-      localStorage.setItem('token', data.token);
-
-      const profile = await API.get('/users/me'); 
-      localStorage.setItem('user', JSON.stringify(profile.data));
-      setUser(profile.data);
+      const res = await api.post("/auth/login", { email, password });
+      login(res.data.token);
+      navigate("/products");
     } catch (err) {
-      setError('Invalid credentials');
+      setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl">
-      <h2 className="text-3xl font-bold mb-6 text-center">{t('login')}</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input 
-          type="email" placeholder="Email" required
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-          onChange={e => setForm({...form, email: e.target.value})}
-        />
-        <input 
-          type="password" placeholder="Password" required
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-          onChange={e => setForm({...form, password: e.target.value})}
-        />
-        <button className="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
-          {t('login')}
-        </button>
-      </form>
-      <p className="mt-4 text-center text-gray-600">
-        No account? <Link to="/register" className="text-indigo-600 hover:underline">{t('register')}</Link>
-      </p>
+    <div className="auth-page">
+      <div className="auth-deco">
+        <div className="auth-deco__circle auth-deco__circle--1" />
+        <div className="auth-deco__circle auth-deco__circle--2" />
+        <div className="auth-deco__circle auth-deco__circle--3" />
+        <div className="auth-deco__text">DockerShop</div>
+      </div>
+      <div className="auth-card">
+        <div className="auth-card__logo">◆</div>
+        <h1 className="auth-card__title">{t("login")}</h1>
+        <p className="auth-card__sub">Welcome back — enter your details</p>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-form__group">
+            <label>{t("email")}</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div className="auth-form__group">
+            <label>{t("password")}</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          {error && <div className="auth-error">{error}</div>}
+          <button className="auth-btn" type="submit" disabled={loading}>
+            {loading ? <span className="spinner" /> : t("sign_in")}
+          </button>
+        </form>
+
+        <p className="auth-switch">
+          {t("no_account")}{" "}
+          <Link to="/register">{t("sign_up")}</Link>
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,68 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import { Trash2, CreditCard } from 'lucide-react';
-import API from '../api/api';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/AppContext";
+import api from "../api/api";
+import { t } from "../i18n/i18n";
 
 export default function Cart() {
-  const [items, setItems] = useState([]);
+  const { items, removeItem, updateQty, clearCart, total } = useCart();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    setItems(savedCart);
-  }, []);
-
-  const removeItem = (cartId) => {
-    const updated = items.filter(i => i.cartId !== cartId);
-    setItems(updated);
-    localStorage.setItem('cart', JSON.stringify(updated));
-  };
-
-  const checkout = async () => {
-    if (items.length === 0) return;
+  const handleOrder = async () => {
+    setLoading(true);
     try {
-      await API.post('/orders', { items: items.map(i => i._id) });
-      localStorage.setItem('cart', '[]');
-      setItems([]);
-      alert('Order created successfully! Notification sent to RabbitMQ.');
+      const orderItems = items.map((i) => ({ productId: i._id, title: i.title, price: i.price, qty: i.qty }));
+      await api.post("/orders", { items: orderItems });
+      clearCart();
+      setSuccess(true);
+      setTimeout(() => navigate("/orders"), 2000);
     } catch (err) {
-      alert('Checkout failed');
+      alert(err.response?.data?.message || "Order failed");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const total = items.reduce((sum, i) => sum + Number(i.price), 0);
+  if (success) {
+    return (
+      <div className="cart-page">
+        <div className="success-state">
+          <div className="success-state__icon">✓</div>
+          <h2>{t("order_placed")}</h2>
+          <p>Redirecting to your orders…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+    <div className="cart-page">
+      <h1 className="page-title">{t("cart")}</h1>
+
       {items.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed">
-          <p className="text-gray-400 text-lg">Your cart is empty</p>
+        <div className="empty-state">
+          <div className="empty-state__icon">◇</div>
+          <p>{t("empty_cart")}</p>
+          <button className="empty-state__btn" onClick={() => navigate("/products")}>
+            {t("products")} →
+          </button>
         </div>
       ) : (
-        <div className="space-y-4">
-          {items.map((item) => (
-            <div key={item.cartId} className="bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center">
-              <div className="flex gap-4 items-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-lg" />
-                <div>
-                  <h4 className="font-bold">{item.title}</h4>
-                  <p className="text-indigo-600 font-medium">${item.price}</p>
+        <div className="cart-layout">
+          <div className="cart-items">
+            {items.map((item) => (
+              <div key={item._id} className="cart-item">
+                <div className="cart-item__info">
+                  <h3 className="cart-item__title">{item.title}</h3>
+                  <span className="cart-item__category">{item.category}</span>
                 </div>
+                <div className="cart-item__controls">
+                  <button className="qty-btn" onClick={() => updateQty(item._id, item.qty - 1)}>−</button>
+                  <span className="qty-val">{item.qty}</span>
+                  <button className="qty-btn" onClick={() => updateQty(item._id, item.qty + 1)}>+</button>
+                </div>
+                <div className="cart-item__price">${(item.price * item.qty).toFixed(2)}</div>
+                <button className="cart-item__remove" onClick={() => removeItem(item._id)}>✕</button>
               </div>
-              <button onClick={() => removeItem(item.cartId)} className="text-red-400 hover:text-red-600 p-2">
-                <Trash2 size={20} />
-              </button>
+            ))}
+          </div>
+
+          <div className="cart-summary">
+            <h2 className="cart-summary__title">{t("total")}</h2>
+            <div className="cart-summary__items">
+              {items.map((i) => (
+                <div key={i._id} className="cart-summary__row">
+                  <span>{i.title} ×{i.qty}</span>
+                  <span>${(i.price * i.qty).toFixed(2)}</span>
+                </div>
+              ))}
             </div>
-          ))}
-          <div className="mt-8 bg-gray-900 text-white p-6 rounded-2xl shadow-xl">
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-gray-400">Total amount:</span>
-              <span className="text-2xl font-bold">${total}</span>
+            <div className="cart-summary__total">
+              <span>{t("total")}</span>
+              <span className="cart-summary__total-price">${total.toFixed(2)}</span>
             </div>
-            <button 
-              onClick={checkout}
-              className="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition"
-            >
-              <CreditCard size={20} /> Checkout (Process Order)
+            <button className="cart-order-btn" onClick={handleOrder} disabled={loading}>
+              {loading ? <span className="spinner" /> : t("place_order")}
             </button>
           </div>
         </div>

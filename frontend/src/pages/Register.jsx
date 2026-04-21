@@ -1,50 +1,87 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import API from '../api/api';
-import { t } from '../i18n/i18n';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../api/api";
+import { useAuth } from "../context/AppContext";
+import { t } from "../i18n/i18n";
 
 export default function Register() {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [error, setError] = useState('');
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
-      await API.post('/auth/register', form);
-      navigate('/login');
+      await api.post("/auth/register", form);
+      const res = await api.post("/auth/login", { email: form.email, password: form.password });
+      login(res.data.token);
+      navigate("/products");
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">{t('register')}</h2>
-      {error && <p className="text-red-500 mb-4 bg-red-50 p-2 rounded text-sm text-center">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input 
-          type="text" placeholder="Name" required
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
-          onChange={e => setForm({...form, name: e.target.value})}
-        />
-        <input 
-          type="email" placeholder="Email" required
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
-          onChange={e => setForm({...form, email: e.target.value})}
-        />
-        <input 
-          type="password" placeholder="Password" required
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
-          onChange={e => setForm({...form, password: e.target.value})}
-        />
-        <button className="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition">
-          {t('register')}
-        </button>
-      </form>
-      <p className="mt-6 text-center text-gray-500">
-        Already have an account? <Link to="/login" className="text-indigo-600 font-medium hover:underline">{t('login')}</Link>
-      </p>
+    <div className="auth-page">
+      <div className="auth-deco">
+        <div className="auth-deco__circle auth-deco__circle--1" />
+        <div className="auth-deco__circle auth-deco__circle--2" />
+        <div className="auth-deco__circle auth-deco__circle--3" />
+        <div className="auth-deco__text">DockerShop</div>
+      </div>
+      <div className="auth-card">
+        <div className="auth-card__logo">◆</div>
+        <h1 className="auth-card__title">{t("register")}</h1>
+        <p className="auth-card__sub">Join us — create your account</p>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-form__group">
+            <label>{t("name")}</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="John Doe"
+              required
+            />
+          </div>
+          <div className="auth-form__group">
+            <label>{t("email")}</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div className="auth-form__group">
+            <label>{t("password")}</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          {error && <div className="auth-error">{error}</div>}
+          <button className="auth-btn" type="submit" disabled={loading}>
+            {loading ? <span className="spinner" /> : t("sign_up")}
+          </button>
+        </form>
+
+        <p className="auth-switch">
+          {t("have_account")}{" "}
+          <Link to="/login">{t("sign_in")}</Link>
+        </p>
+      </div>
     </div>
   );
 }
