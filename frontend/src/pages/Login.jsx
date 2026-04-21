@@ -1,64 +1,48 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../api/api";
-import { t } from "../i18n/i18n";
+import React, { useState } from 'react';
+import API from '../api/api';
+import { Link } from 'react-router-dom';
+import { t } from '../i18n/i18n';
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+export default function Login({ setUser }) {
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
 
-  const submit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const res = await api.post("/auth/login", {
-        email,
-        password
-      });
+      const { data } = await API.post('/auth/login', form);
+      localStorage.setItem('token', data.token);
 
-      localStorage.setItem("token", res.data.token);
-
-      const payload = JSON.parse(
-        atob(res.data.token.split(".")[1])
-      );
-
-      localStorage.setItem("role", payload.role);
-      navigate("/products");
-    } catch (error) {
-      alert("Login failed");
-      console.log(error);
+      const profile = await API.get('/users/me'); 
+      localStorage.setItem('user', JSON.stringify(profile.data));
+      setUser(profile.data);
+    } catch (err) {
+      setError('Invalid credentials');
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1>{t("login")}</h1>
-        <p className="auth-subtitle">
-          Welcome back to your student marketplace
-        </p>
-
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+    <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl">
+      <h2 className="text-3xl font-bold mb-6 text-center">{t('login')}</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input 
+          type="email" placeholder="Email" required
+          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+          onChange={e => setForm({...form, email: e.target.value})}
         />
-
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+        <input 
+          type="password" placeholder="Password" required
+          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+          onChange={e => setForm({...form, password: e.target.value})}
         />
-
-        <button className="auth-button" onClick={submit}>
-          {t("login")}
+        <button className="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
+          {t('login')}
         </button>
-
-        <p className="auth-link-text">
-          Don’t have an account? <Link to="/register">Register</Link>
-        </p>
-      </div>
+      </form>
+      <p className="mt-4 text-center text-gray-600">
+        No account? <Link to="/register" className="text-indigo-600 hover:underline">{t('register')}</Link>
+      </p>
     </div>
   );
 }
