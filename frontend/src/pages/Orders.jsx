@@ -5,7 +5,6 @@ import { t } from "../i18n/i18n";
 const STATUS_COLORS = {
   Pending: "#F59E0B",
   Paid: "#10B981",
-  Shipped: "#3B82F6",
   Cancelled: "#EF4444",
 };
 

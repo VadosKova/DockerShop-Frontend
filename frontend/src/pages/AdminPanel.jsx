@@ -3,11 +3,10 @@ import api from "../api/api";
 import { t } from "../i18n/i18n";
 import { useAuth } from "../context/AppContext";
 
-const STATUS_OPTIONS = ["Pending", "Paid", "Shipped", "Cancelled"];
+const STATUS_OPTIONS = ["Pending", "Paid", "Cancelled"];
 const STATUS_COLORS = {
   Pending: "#F59E0B",
   Paid: "#10B981",
-  Shipped: "#3B82F6",
   Cancelled: "#EF4444",
 };
 const CATEGORIES = ["Electronics", "Clothing", "Books", "Home", "Sports", "Beauty"];
