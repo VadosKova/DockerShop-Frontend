@@ -38,7 +38,6 @@ export default function Login() {
       <div className="auth-card">
         <div className="auth-card__logo">◆</div>
         <h1 className="auth-card__title">{t("login")}</h1>
-        <p className="auth-card__sub">Welcome back — enter your details</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-form__group">
@@ -47,7 +46,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder=" "
               required
             />
           </div>
@@ -57,7 +56,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder=" "
               required
             />
           </div>

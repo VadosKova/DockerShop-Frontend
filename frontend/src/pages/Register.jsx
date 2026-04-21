@@ -38,7 +38,6 @@ export default function Register() {
       <div className="auth-card">
         <div className="auth-card__logo">◆</div>
         <h1 className="auth-card__title">{t("register")}</h1>
-        <p className="auth-card__sub">Join us — create your account</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-form__group">
@@ -47,7 +46,7 @@ export default function Register() {
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="John Doe"
+              placeholder=" "
               required
             />
           </div>
@@ -57,7 +56,7 @@ export default function Register() {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="you@example.com"
+              placeholder=" "
               required
             />
           </div>
@@ -67,7 +66,7 @@ export default function Register() {
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
+              placeholder=" "
               required
             />
           </div>

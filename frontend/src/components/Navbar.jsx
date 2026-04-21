@@ -62,7 +62,7 @@ export default function Navbar() {
           <button className="navbar__lang" onClick={toggleLang}>
             {translations[lang === "en" ? "uk" : "en"].change_language}
           </button>
-          <span className="navbar__user">{user.role === "admin" ? "👑" : "👤"}</span>
+          <span className="navbar__user">{user.role === "admin"}</span>
           <button className="navbar__logout" onClick={handleLogout}>
             {t("logout")}
           </button>

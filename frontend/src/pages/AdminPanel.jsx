@@ -80,7 +80,7 @@ export default function AdminPanel() {
       {toast && <div className="toast">{toast}</div>}
 
       <div className="admin-header">
-        <h1 className="admin-header__title">⚙ {t("admin")}</h1>
+        <h1 className="admin-header__title">{t("admin")}</h1>
         <div className="admin-tabs">
           <button className={`admin-tab ${tab === "products" ? "admin-tab--active" : ""}`} onClick={() => setTab("products")}>
             {t("manage_products")}

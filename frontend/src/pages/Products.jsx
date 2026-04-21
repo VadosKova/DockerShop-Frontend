@@ -57,7 +57,6 @@ export default function Products() {
       <div className="products-hero">
         <div className="products-hero__content">
           <h1 className="products-hero__title">{t("products")}</h1>
-          <p className="products-hero__sub">{t("hero_sub")}</p>
         </div>
         <div className="products-hero__deco">
           <div className="hero-orb hero-orb--1" />
