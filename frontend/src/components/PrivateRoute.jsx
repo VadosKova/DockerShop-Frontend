@@ -1,10 +1,16 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "react-router-dom";
 
-export default function PrivateRoute ({ children, role }) {
-  const user = JSON.parse(localStorage.getItem("user"));
-  
-  if (!user) return <Navigate to="/login" />;
-  if (role && user.role !== role) return <Navigate to="/" />;
-  
+export default function PrivateRoute({ children, adminOnly = false }) {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (adminOnly && role !== "admin") {
+    return <Navigate to="/products" replace />;
+  }
+
   return children;
-};
+}

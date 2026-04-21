@@ -1,41 +1,33 @@
-import { createContext, useState } from "react";
-import api from "../api/api";
+import { createContext, useContext, useState } from "react";
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+export function AuthProvider({ children }) {
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [role, setRole] = useState(localStorage.getItem("role"));
 
-  const login = async (data, navigate) => {
-    try {
-      const res = await api.post("/auth/login", data);
-      const token = res.data.token;
-
-      localStorage.setItem("token", token);
-
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setUser(payload);
-
-      if (payload.role === "admin") navigate("/admin");
-      else navigate("/");
-    } catch {
-      navigate("/register");
-    }
-  };
-
-  const register = async (data, navigate) => {
-    await api.post("/auth/register", data);
-    navigate("/login");
+  const login = (newToken, newRole) => {
+    localStorage.setItem("token", newToken);
+    localStorage.setItem("role", newRole);
+    setToken(newToken);
+    setRole(newRole);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    setUser(null);
+    localStorage.removeItem("role");
+    localStorage.removeItem("cart");
+    setToken(null);
+    setRole(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ token, role, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
