@@ -129,3 +129,8 @@ export const t = (key) => {
   const lang = localStorage.getItem("lang") || "en";
   return translations[lang]?.[key] || key;
 };
+
+export const tCategory = (cat) => {
+  const lang = localStorage.getItem("lang") || "en";
+  return translations[lang].categories?.[cat] || cat;
+};
