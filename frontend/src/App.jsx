@@ -5,7 +5,7 @@ import { t } from './i18n/i18n';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Catalog from './pages/Catalog';
-import ProductDetail from './pages/ProductDetail';
+import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import AdminPanel from './pages/AdminPanel';
