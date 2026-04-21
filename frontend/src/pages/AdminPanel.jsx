@@ -22,21 +22,32 @@ export default function AdminPanel() {
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [toast, setToast] = useState("");
+  const fileInputRef = useRef(null);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
 
-  const loadProducts = () => {
-    setLoading(true);
-    api.get("/products").then((r) => setProducts(r.data)).finally(() => setLoading(false));
+  const loadProducts = () => { 
+    setLoading(true); 
+    api.get("/products")
+    .then((r) => setProducts(r.data))
+    .finally(() => setLoading(false)); 
   };
-  const loadOrders = () => {
-    setLoading(true);
-    api.get("/orders").then((r) => setOrders(r.data)).finally(() => setLoading(false));
+
+  const loadOrders  = () => { 
+    setLoading(true); 
+    api.get("/orders")
+    .then((r) => setOrders(r.data))
+    .finally(() => setLoading(false)); 
   };
-  const loadUsers = () => {
-    setLoading(true);
-    api.get("/users").then((r) => setUsers(r.data)).finally(() => setLoading(false));
+  
+  const loadUsers   = () => { 
+    setLoading(true); 
+    api.get("/users")
+    .then((r) => setUsers(r.data))
+    .finally(() => setLoading(false)); 
   };
 
   useEffect(() => {
@@ -45,20 +56,52 @@ export default function AdminPanel() {
     else if (tab === "users") loadUsers();
   }, [tab]);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      showToast("Only JPG and PNG allowed");
+      e.target.value = "";
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
-    const data = { ...form, price: parseFloat(form.price) };
     try {
+      let savedProduct;
+      const data = { ...form, price: parseFloat(form.price) };
+
       if (editId) {
-        await api.put(`/products/${editId}`, data);
+        const res = await api.put(`/products/${editId}`, data);
+        savedProduct = res.data;
         showToast("Updated!");
       } else {
-        await api.post("/products", data);
+        const res = await api.post("/products", data);
+        savedProduct = res.data;
         showToast("Created!");
       }
+
+      if (imageFile && savedProduct?._id) {
+        const fd = new FormData();
+        fd.append("image", imageFile);
+        await api.post(`/products/${savedProduct._id}/image`, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
       setForm(emptyForm);
       setEditId(null);
       setShowForm(false);
+      clearImage();
       loadProducts();
     } catch (err) {
       showToast(err.response?.data?.message || "Error");
@@ -67,14 +110,14 @@ export default function AdminPanel() {
 
   const handleEdit = (p) => {
     setForm({
-      title: p.title || "",
-      title_uk: p.title_uk || "",
+      title: p.title || "", title_uk: p.title_uk || "",
       category: p.category || "",
-      description: p.description || "",
-      description_uk: p.description_uk || "",
+      description: p.description || "", description_uk: p.description_uk || "",
       price: p.price || "",
     });
     setEditId(p._id);
+    setImageFile(null);
+    setImagePreview(p.image ? `${API_URL}/products/image/${p.image}` : null);
     setShowForm(true);
   };
 
@@ -123,7 +166,7 @@ export default function AdminPanel() {
         <div>
           <div className="admin-section__header">
             <h2>{t("manage_products")}</h2>
-            <button className="admin-add-btn" onClick={() => { setForm(emptyForm); setEditId(null); setShowForm(true); }}>
+            <button className="admin-add-btn" onClick={() => { setForm(emptyForm); setEditId(null); clearImage(); setShowForm(true); }}>
               + {t("add_product")}
             </button>
           </div>
@@ -133,14 +176,39 @@ export default function AdminPanel() {
               <div className="admin-form-card">
                 <h3 className="admin-form-card__title">{editId ? t("edit") : t("add_product")}</h3>
                 <form onSubmit={handleSave} className="admin-form">
+                  <div className="admin-form__group">
+                    <label>{t("image")} (JPG, PNG)</label>
+                    <div className="image-upload-area" onClick={() => fileInputRef.current?.click()}>
+                      {imagePreview ? (
+                        <img src={imagePreview} alt="preview" className="image-preview" />
+                      ) : (
+                        <div className="image-upload-placeholder">
+                          <span className="image-upload-icon">📷</span>
+                          <span>{t("upload_image")}</span>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      style={{ display: "none" }}
+                      onChange={handleImageChange}
+                    />
+                    {imagePreview && (
+                      <button type="button" className="image-remove-btn" onClick={clearImage}>
+                        ✕ {t("remove_image")}
+                      </button>
+                    )}
+                  </div>
 
                   <div className="admin-form__row">
                     <div className="admin-form__group">
-                      <label>{t("title")}</label>
+                      <label>{t("title")} (EN)</label>
                       <input {...field("title")} required placeholder="iPhone 15" />
                     </div>
                     <div className="admin-form__group">
-                      <label>{t("title_uk")}</label>
+                      <label>{t("title")} (UK)</label>
                       <input {...field("title_uk")} required placeholder="Айфон 15" />
                     </div>
                   </div>
@@ -149,19 +217,17 @@ export default function AdminPanel() {
                     <label>{t("category")}</label>
                     <select {...field("category")} required>
                       <option value="">—</option>
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{tCategory(c)}</option>
-                      ))}
+                      {CATEGORIES.map((c) => <option key={c} value={c}>{tCategory(c)}</option>)}
                     </select>
                   </div>
 
                   <div className="admin-form__row">
                     <div className="admin-form__group">
-                      <label>{t("description")}</label>
+                      <label>{t("description")} (EN)</label>
                       <textarea {...field("description")} required rows={3} placeholder="Description in English" />
                     </div>
                     <div className="admin-form__group">
-                      <label>{t("description_uk")}</label>
+                      <label>{t("description")} (UK)</label>
                       <textarea {...field("description_uk")} required rows={3} placeholder="Опис українською" />
                     </div>
                   </div>
@@ -172,7 +238,7 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="admin-form__actions">
-                    <button type="button" className="admin-cancel-btn" onClick={() => setShowForm(false)}>{t("cancel")}</button>
+                    <button type="button" className="admin-cancel-btn" onClick={() => { setShowForm(false); clearImage(); }}>{t("cancel")}</button>
                     <button type="submit" className="admin-save-btn">{t("save")}</button>
                   </div>
                 </form>
@@ -185,11 +251,21 @@ export default function AdminPanel() {
           ) : (
             <div className="table">
               <div className="table-head">
-                <span>{t("title")}</span><span>{t("category")}</span><span>{t("price")}</span><span>{t("actions")}</span>
+                <span>{t("image_col")}</span>
+                <span>{t("title")}</span>
+                <span>{t("category")}</span>
+                <span>{t("price")}</span>
+                <span>{t("actions")}</span>
               </div>
               {products.map((p) => (
-                <div key={p._id} className="table-row">
-                  <span>{p.title}{p.title_uk && <span className="text-muted"> / {p.title_uk}</span>}</span>
+                <div key={p._id} className="table-row table-row--products">
+                  <div className="table-product-thumb">
+                    {p.image ? (
+                      <img src={`${API_URL}/products/image/${p.image}`} alt={p.title} className="thumb-img" onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
+                    ) : null}
+                    <div className="thumb-placeholder" style={{ display: p.image ? "none" : "flex" }}>◈</div>
+                  </div>
+                  <span className="table-row__title">{p.title}{p.title_uk && <span className="text-muted"> / {p.title_uk}</span>}</span>
                   <span><span className="badge">{tCategory(p.category)}</span></span>
                   <span className="price">${p.price?.toFixed(2)}</span>
                   <div className="row-actions">
@@ -205,9 +281,7 @@ export default function AdminPanel() {
 
       {tab === "orders" && (
         <div>
-          <div className="admin-section__header">
-            <h2>{t("all_orders")}</h2>
-          </div>
+          <div className="admin-section__header"><h2>{t("all_orders")}</h2></div>
           {loading ? (
             <div className="skeleton-grid">{[...Array(3)].map((_, i) => <div key={i} className="skeleton" />)}</div>
           ) : orders.length === 0 ? (
@@ -245,9 +319,7 @@ export default function AdminPanel() {
 
       {tab === "users" && (
         <div>
-          <div className="admin-section__header">
-            <h2>{t("manage_users")}</h2>
-          </div>
+          <div className="admin-section__header"><h2>{t("manage_users")}</h2></div>
           {loading ? (
             <div className="skeleton-grid">{[...Array(3)].map((_, i) => <div key={i} className="skeleton" />)}</div>
           ) : (
@@ -266,10 +338,7 @@ export default function AdminPanel() {
                   </span>
                   <div className="row-actions">
                     {u._id !== currentUser?.id ? (
-                      <button
-                        className={u.role === "admin" ? "btn-delete" : "btn-edit"}
-                        onClick={() => handleRoleToggle(u)}
-                      >
+                      <button className={u.role === "admin" ? "btn-delete" : "btn-edit"} onClick={() => handleRoleToggle(u)}>
                         {u.role === "admin" ? t("remove_admin") : t("make_admin")}
                       </button>
                     ) : (

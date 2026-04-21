@@ -14,6 +14,27 @@ function getColor(str) {
   return COLORS[Math.abs(hash) % COLORS.length];
 }
 
+function ProductImage({ product, color }) {
+  const [imgError, setImgError] = useState(false);
+  const hasImage = product.image && !imgError;
+
+  if (hasImage) {
+    return (
+      <img
+        src={`${API_URL}/products/image/${product.image}`}
+        alt={product.title}
+        className="product-card__img"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+  return (
+    <div className="product-card__placeholder" style={{ background: `linear-gradient(135deg, ${color}33, ${color}66)` }}>
+      <div style={{ fontSize: 32, color }}>◈</div>
+    </div>
+  );
+}
+
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,12 +83,7 @@ export default function Products() {
 
       <div className="products-controls">
         <div className="search-box">
-          <input
-            className="search-box__input"
-            placeholder={t("search")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <input className="search-box__input" placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="category-pills">
           <button className={`pill ${!category ? "pill--active" : ""}`} onClick={() => setCategory("")}>
@@ -91,8 +107,8 @@ export default function Products() {
             const color = getColor(p.title || "x");
             return (
               <div key={p._id} className="product-card" onClick={() => navigate(`/products/${p._id}`)}>
-                <div className="product-card__image" style={{ background: `linear-gradient(135deg, ${color}33, ${color}66)` }}>
-                  <div style={{ fontSize: 32, color }}>◈</div>
+                <div className="product-card__image">
+                  <ProductImage product={p} color={color} />
                   <div className="product-card__category-tag">{tCategory(p.category)}</div>
                 </div>
                 <div className="product-card__body">

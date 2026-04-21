@@ -18,11 +18,12 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const { addItem } = useCart();
-
   const { lang } = useAuth();
+
   const getTitle = (p) => lang === "uk" && p.title_uk ? p.title_uk : p.title;
-  const getDesc = (p) => lang === "uk" && p.description_uk ? p.description_uk : p.description;
+  const getDesc  = (p) => lang === "uk" && p.description_uk ? p.description_uk : p.description;
 
   useEffect(() => {
     api.get(`/products/${id}`)
@@ -40,28 +41,36 @@ export default function ProductDetail() {
   if (!product) return <div className="page-loading"><p>Product not found</p></div>;
 
   const color = getColor(getTitle(product) || "x");
+  const hasImage = product.image && !imgError;
 
   return (
     <div className="detail-page">
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        ← {t("back")}
-      </button>
+      <button className="back-btn" onClick={() => navigate(-1)}>← {t("back")}</button>
 
       <div className="detail-card">
-        <div className="detail-card__image" style={{ background: `linear-gradient(135deg, ${color}22, ${color}55)` }}>
-          <div className="detail-card__image-icon" style={{ color }}>◈</div>
+        <div className="detail-card__image">
+          {hasImage ? (
+            <img
+              src={`${API_URL}/products/image/${product.image}`}
+              alt={getTitle(product)}
+              className="detail-card__img"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="detail-card__placeholder" style={{ background: `linear-gradient(135deg, ${color}22, ${color}55)` }}>
+              <div className="detail-card__image-icon" style={{ color }}>◈</div>
+            </div>
+          )}
         </div>
 
         <div className="detail-card__info">
-          <div className="detail-card__badge">{t("in_stock")}</div>
+          <div className="detail-card__badge">✓ {t("in_stock")}</div>
           <h1 className="detail-card__title">{getTitle(product)}</h1>
           <p className="detail-card__desc">{getDesc(product)}</p>
 
-          <div className="detail-card__meta">
-            <div className="detail-meta-item">
-              <span className="detail-meta-item__label">{t("category")}</span>
-              <span className="detail-meta-item__value">: {product.category}</span>
-            </div>
+          <div className="detail-meta-item">
+            <span className="detail-meta-item__label">{t("category")}</span>
+            <span className="detail-meta-item__value">{tCategory(product.category)}</span>
           </div>
 
           <div className="detail-card__purchase">
@@ -70,7 +79,7 @@ export default function ProductDetail() {
               className={`detail-card__btn ${added ? "detail-card__btn--added" : ""}`}
               onClick={handleAdd}
             >
-              {added ? "✓ Added!" : `+ ${t("add_to_cart")}`}
+              {added ? `✓ ${t("added")}` : `+ ${t("add_to_cart")}`}
             </button>
           </div>
         </div>
