@@ -42,7 +42,7 @@ export default function Orders() {
                   className="order-status-badge"
                   style={{ background: `${STATUS_COLORS[order.status]}22`, color: STATUS_COLORS[order.status], borderColor: `${STATUS_COLORS[order.status]}44` }}
                 >
-                  {order.status}
+                  {t(order.status.toLowerCase())}
                 </div>
               </div>
 
