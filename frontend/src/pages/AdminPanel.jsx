@@ -10,7 +10,7 @@ const STATUS_COLORS = {
   Cancelled: "#EF4444",
 };
 const CATEGORIES = ["Electronics", "Clothing", "Books", "Home", "Sports", "Beauty"];
-const emptyForm = { title: "", category: "", description: "", price: "" };
+const emptyForm = { title: "", title_uk: "", category: "", description: "", description_uk: "", price: "" };
 
 export default function AdminPanel() {
   const { user: currentUser } = useAuth();
@@ -28,15 +28,15 @@ export default function AdminPanel() {
 
   const loadProducts = () => {
     setLoading(true);
-    api.get("/products").then((res) => setProducts(res.data)).finally(() => setLoading(false));
+    api.get("/products").then((r) => setProducts(r.data)).finally(() => setLoading(false));
   };
   const loadOrders = () => {
     setLoading(true);
-    api.get("/orders").then((res) => setOrders(res.data)).finally(() => setLoading(false));
+    api.get("/orders").then((r) => setOrders(r.data)).finally(() => setLoading(false));
   };
   const loadUsers = () => {
     setLoading(true);
-    api.get("/users").then((res) => setUsers(res.data)).finally(() => setLoading(false));
+    api.get("/users").then((r) => setUsers(r.data)).finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -51,10 +51,10 @@ export default function AdminPanel() {
     try {
       if (editId) {
         await api.put(`/products/${editId}`, data);
-        showToast("Product updated!");
+        showToast("Updated!");
       } else {
         await api.post("/products", data);
-        showToast("Product created!");
+        showToast("Created!");
       }
       setForm(emptyForm);
       setEditId(null);
@@ -66,13 +66,20 @@ export default function AdminPanel() {
   };
 
   const handleEdit = (p) => {
-    setForm({ title: p.title, category: p.category, description: p.description, price: p.price });
+    setForm({
+      title: p.title || "",
+      title_uk: p.title_uk || "",
+      category: p.category || "",
+      description: p.description || "",
+      description_uk: p.description_uk || "",
+      price: p.price || "",
+    });
     setEditId(p._id);
     setShowForm(true);
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this product?")) return;
+    if (!confirm("Delete?")) return;
     await api.delete(`/products/${id}`);
     showToast("Deleted!");
     loadProducts();
@@ -95,6 +102,8 @@ export default function AdminPanel() {
     }
   };
 
+  const field = (key) => ({ value: form[key], onChange: (e) => setForm({ ...form, [key]: e.target.value }) });
+
   return (
     <div className="admin-page">
       {toast && <div className="toast">{toast}</div>}
@@ -102,20 +111,16 @@ export default function AdminPanel() {
       <div className="admin-header">
         <h1 className="admin-header__title">{t("admin")}</h1>
         <div className="admin-tabs">
-          <button className={`admin-tab ${tab === "products" ? "admin-tab--active" : ""}`} onClick={() => setTab("products")}>
-            {t("manage_products")}
-          </button>
-          <button className={`admin-tab ${tab === "orders" ? "admin-tab--active" : ""}`} onClick={() => setTab("orders")}>
-            {t("manage_orders")}
-          </button>
-          <button className={`admin-tab ${tab === "users" ? "admin-tab--active" : ""}`} onClick={() => setTab("users")}>
-            {t("manage_users")}
-          </button>
+          {["products", "orders", "users"].map((t_) => (
+            <button key={t_} className={`admin-tab ${tab === t_ ? "admin-tab--active" : ""}`} onClick={() => setTab(t_)}>
+              {t(`manage_${t_}`)}
+            </button>
+          ))}
         </div>
       </div>
 
       {tab === "products" && (
-        <div className="admin-section">
+        <div>
           <div className="admin-section__header">
             <h2>{t("manage_products")}</h2>
             <button className="admin-add-btn" onClick={() => { setForm(emptyForm); setEditId(null); setShowForm(true); }}>
@@ -128,27 +133,44 @@ export default function AdminPanel() {
               <div className="admin-form-card">
                 <h3 className="admin-form-card__title">{editId ? t("edit") : t("add_product")}</h3>
                 <form onSubmit={handleSave} className="admin-form">
+
                   <div className="admin-form__row">
                     <div className="admin-form__group">
                       <label>{t("title")}</label>
-                      <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required placeholder="Product name" />
+                      <input {...field("title")} required placeholder="iPhone 15" />
                     </div>
                     <div className="admin-form__group">
-                      <label>{t("category")}</label>
-                      <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required>
-                        <option value="">Select category</option>
-                        {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-                      </select>
+                      <label>{t("title_uk")}</label>
+                      <input {...field("title_uk")} required placeholder="Айфон 15" />
                     </div>
                   </div>
+
                   <div className="admin-form__group">
-                    <label>{t("description")}</label>
-                    <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required placeholder="Product description" rows={3} />
+                    <label>{t("category")}</label>
+                    <select {...field("category")} required>
+                      <option value="">—</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{tCategory(c)}</option>
+                      ))}
+                    </select>
                   </div>
+
+                  <div className="admin-form__row">
+                    <div className="admin-form__group">
+                      <label>{t("description")}</label>
+                      <textarea {...field("description")} required rows={3} placeholder="Description in English" />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>{t("description_uk")}</label>
+                      <textarea {...field("description_uk")} required rows={3} placeholder="Опис українською" />
+                    </div>
+                  </div>
+
                   <div className="admin-form__group">
                     <label>{t("price")} ($)</label>
-                    <input type="number" step="0.01" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required placeholder="0.00" />
+                    <input type="number" step="0.01" min="0" {...field("price")} required placeholder="0.00" />
                   </div>
+
                   <div className="admin-form__actions">
                     <button type="button" className="admin-cancel-btn" onClick={() => setShowForm(false)}>{t("cancel")}</button>
                     <button type="submit" className="admin-save-btn">{t("save")}</button>
@@ -159,20 +181,20 @@ export default function AdminPanel() {
           )}
 
           {loading ? (
-            <div className="loading-grid">{[...Array(4)].map((_, i) => <div key={i} className="product-skeleton" />)}</div>
+            <div className="skeleton-grid">{[...Array(4)].map((_, i) => <div key={i} className="skeleton" />)}</div>
           ) : (
-            <div className="admin-products-table">
-              <div className="admin-table-head">
+            <div className="table">
+              <div className="table-head">
                 <span>Title</span><span>Category</span><span>Price</span><span>Actions</span>
               </div>
               {products.map((p) => (
-                <div key={p._id} className="admin-table-row">
-                  <span className="admin-table-row__title">{p.title}</span>
-                  <span className="admin-table-row__cat"><span className="cat-badge">{p.category}</span></span>
-                  <span className="admin-table-row__price">${p.price?.toFixed(2)}</span>
-                  <div className="admin-table-row__actions">
-                    <button className="admin-edit-btn" onClick={() => handleEdit(p)}>{t("edit")}</button>
-                    <button className="admin-delete-btn" onClick={() => handleDelete(p._id)}>{t("delete")}</button>
+                <div key={p._id} className="table-row">
+                  <span>{p.title}{p.title_uk && <span className="text-muted"> / {p.title_uk}</span>}</span>
+                  <span><span className="badge">{tCategory(p.category)}</span></span>
+                  <span className="price">${p.price?.toFixed(2)}</span>
+                  <div className="row-actions">
+                    <button className="btn-edit" onClick={() => handleEdit(p)}>{t("edit")}</button>
+                    <button className="btn-delete" onClick={() => handleDelete(p._id)}>{t("delete")}</button>
                   </div>
                 </div>
               ))}
@@ -182,44 +204,37 @@ export default function AdminPanel() {
       )}
 
       {tab === "orders" && (
-        <div className="admin-section">
+        <div>
           <div className="admin-section__header">
             <h2>{t("all_orders")}</h2>
           </div>
           {loading ? (
-            <div className="loading-grid">{[...Array(4)].map((_, i) => <div key={i} className="product-skeleton" />)}</div>
+            <div className="skeleton-grid">{[...Array(3)].map((_, i) => <div key={i} className="skeleton" />)}</div>
           ) : orders.length === 0 ? (
-            <div className="empty-state"><div className="empty-state__icon">◇</div><p>No orders yet</p></div>
+            <div className="empty-state"><p>No orders yet</p></div>
           ) : (
-            <div className="admin-orders-list">
+            <div className="orders-list">
               {orders.map((order) => (
-                <div key={order._id} className="admin-order-card">
-                  <div className="admin-order-card__header">
+                <div key={order._id} className="order-card">
+                  <div className="order-card__header">
                     <div>
-                      <div className="admin-order-card__id">#{order._id.slice(-8).toUpperCase()}</div>
-                      <div className="admin-order-card__user">User: {order.userId?.slice(-6)}</div>
+                      <div className="order-card__code">#{order._id.slice(-8).toUpperCase()}</div>
+                      <div className="text-muted">User: {order.userId?.slice(-6)}</div>
                     </div>
-                    <div
-                      className="order-status-badge"
-                      style={{ background: `${STATUS_COLORS[order.status]}22`, color: STATUS_COLORS[order.status], borderColor: `${STATUS_COLORS[order.status]}44` }}
-                    >
+                    <div className="status-badge" style={{ background: `${STATUS_COLORS[order.status]}22`, color: STATUS_COLORS[order.status], borderColor: `${STATUS_COLORS[order.status]}44` }}>
                       {order.status}
                     </div>
                   </div>
-                  <div className="admin-order-card__items">
+                  <div className="order-tags">
                     {order.items?.map((item, i) => (
-                      <span key={i} className="admin-order-item">{item.title || item.productId} ×{item.qty}</span>
+                      <span key={i} className="order-tag">{item.title || item.productId} ×{item.qty}</span>
                     ))}
                   </div>
-                  <div className="admin-order-card__footer">
-                    <span className="admin-order-total">
-                      ${order.items?.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0).toFixed(2)}
-                    </span>
-                    <div className="admin-status-select">
-                      <select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)}>
-                        {STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
-                      </select>
-                    </div>
+                  <div className="order-card__footer">
+                    <span className="price">${order.items?.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0).toFixed(2)}</span>
+                    <select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)} className="status-select">
+                      {STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+                    </select>
                   </div>
                 </div>
               ))}
@@ -229,36 +244,36 @@ export default function AdminPanel() {
       )}
 
       {tab === "users" && (
-        <div className="admin-section">
+        <div>
           <div className="admin-section__header">
             <h2>{t("manage_users")}</h2>
           </div>
           {loading ? (
-            <div className="loading-grid">{[...Array(4)].map((_, i) => <div key={i} className="product-skeleton" />)}</div>
+            <div className="skeleton-grid">{[...Array(3)].map((_, i) => <div key={i} className="skeleton" />)}</div>
           ) : (
-            <div className="admin-products-table">
-              <div className="admin-table-head" style={{ gridTemplateColumns: "2fr 2fr 1fr 140px" }}>
+            <div className="table">
+              <div className="table-head" style={{ gridTemplateColumns: "2fr 2fr 1fr 140px" }}>
                 <span>Name</span><span>Email</span><span>{t("role")}</span><span>Actions</span>
               </div>
               {users.map((u) => (
-                <div key={u._id} className="admin-table-row" style={{ gridTemplateColumns: "2fr 2fr 1fr 140px" }}>
-                  <span className="admin-table-row__title">{u.name || "—"}</span>
-                  <span style={{ fontSize: 13, color: "#555" }}>{u.email}</span>
+                <div key={u._id} className="table-row" style={{ gridTemplateColumns: "2fr 2fr 1fr 140px" }}>
+                  <span>{u.name || "—"}</span>
+                  <span className="text-muted">{u.email}</span>
                   <span>
-                    <span className="cat-badge" style={u.role === "admin" ? { background: "#eef0fd", borderColor: "#c7cefb", color: "#4f6ef7" } : {}}>
+                    <span className="badge" style={u.role === "admin" ? { background: "#eef0fd", borderColor: "#c7cefb", color: "#4f6ef7" } : {}}>
                       {u.role}
                     </span>
                   </span>
-                  <div className="admin-table-row__actions">
+                  <div className="row-actions">
                     {u._id !== currentUser?.id ? (
                       <button
-                        className={u.role === "admin" ? "admin-delete-btn" : "admin-edit-btn"}
+                        className={u.role === "admin" ? "btn-delete" : "btn-edit"}
                         onClick={() => handleRoleToggle(u)}
                       >
                         {u.role === "admin" ? t("remove_admin") : t("make_admin")}
                       </button>
                     ) : (
-                      <span style={{ fontSize: 12, color: "#aaa" }}>you</span>
+                      <span className="text-muted">you</span>
                     )}
                   </div>
                 </div>
