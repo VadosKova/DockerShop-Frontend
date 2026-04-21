@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../api/api";
 import { t } from "../i18n/i18n";
+import { useAuth } from "../context/AppContext";
 
 const STATUS_OPTIONS = ["Pending", "Paid", "Shipped", "Cancelled"];
 const STATUS_COLORS = {
@@ -10,13 +11,14 @@ const STATUS_COLORS = {
   Cancelled: "#EF4444",
 };
 const CATEGORIES = ["Electronics", "Clothing", "Books", "Home", "Sports", "Beauty"];
-
 const emptyForm = { title: "", category: "", description: "", price: "" };
 
 export default function AdminPanel() {
+  const { user: currentUser } = useAuth();
   const [tab, setTab] = useState("products");
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState(null);
@@ -33,8 +35,16 @@ export default function AdminPanel() {
     setLoading(true);
     api.get("/orders").then((res) => setOrders(res.data)).finally(() => setLoading(false));
   };
+  const loadUsers = () => {
+    setLoading(true);
+    api.get("/users").then((res) => setUsers(res.data)).finally(() => setLoading(false));
+  };
 
-  useEffect(() => { tab === "products" ? loadProducts() : loadOrders(); }, [tab]);
+  useEffect(() => {
+    if (tab === "products") loadProducts();
+    else if (tab === "orders") loadOrders();
+    else if (tab === "users") loadUsers();
+  }, [tab]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -75,6 +85,17 @@ export default function AdminPanel() {
     loadOrders();
   };
 
+  const handleRoleToggle = async (u) => {
+    const newRole = u.role === "admin" ? "customer" : "admin";
+    try {
+      await api.put(`/users/${u._id}/role`, { role: newRole });
+      showToast(`${u.name || u.email} → ${newRole}`);
+      loadUsers();
+    } catch (err) {
+      showToast(err.response?.data?.message || "Error");
+    }
+  };
+
   return (
     <div className="admin-page">
       {toast && <div className="toast">{toast}</div>}
@@ -87,6 +108,9 @@ export default function AdminPanel() {
           </button>
           <button className={`admin-tab ${tab === "orders" ? "admin-tab--active" : ""}`} onClick={() => setTab("orders")}>
             {t("manage_orders")}
+          </button>
+          <button className={`admin-tab ${tab === "users" ? "admin-tab--active" : ""}`} onClick={() => setTab("users")}>
+            {t("manage_users")}
           </button>
         </div>
       </div>
@@ -163,7 +187,6 @@ export default function AdminPanel() {
           <div className="admin-section__header">
             <h2>{t("all_orders")}</h2>
           </div>
-
           {loading ? (
             <div className="loading-grid">{[...Array(4)].map((_, i) => <div key={i} className="product-skeleton" />)}</div>
           ) : orders.length === 0 ? (
@@ -194,13 +217,50 @@ export default function AdminPanel() {
                       ${order.items?.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0).toFixed(2)}
                     </span>
                     <div className="admin-status-select">
-                      <select
-                        value={order.status}
-                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                      >
+                      <select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)}>
                         {STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
                       </select>
                     </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "users" && (
+        <div className="admin-section">
+          <div className="admin-section__header">
+            <h2>{t("manage_users")}</h2>
+          </div>
+          {loading ? (
+            <div className="loading-grid">{[...Array(4)].map((_, i) => <div key={i} className="product-skeleton" />)}</div>
+          ) : (
+            <div className="admin-products-table">
+              <div className="admin-table-head" style={{ gridTemplateColumns: "2fr 2fr 1fr 140px" }}>
+                <span>Name</span><span>Email</span><span>{t("role")}</span><span>Actions</span>
+              </div>
+              {users.map((u) => (
+                <div key={u._id} className="admin-table-row" style={{ gridTemplateColumns: "2fr 2fr 1fr 140px" }}>
+                  <span className="admin-table-row__title">{u.name || "—"}</span>
+                  <span style={{ fontSize: 13, color: "#555" }}>{u.email}</span>
+                  <span>
+                    <span className="cat-badge" style={u.role === "admin" ? { background: "#eef0fd", borderColor: "#c7cefb", color: "#4f6ef7" } : {}}>
+                      {u.role}
+                    </span>
+                  </span>
+                  <div className="admin-table-row__actions">
+                    {u._id !== currentUser?.id ? (
+                      <button
+                        className={u.role === "admin" ? "admin-delete-btn" : "admin-edit-btn"}
+                        onClick={() => handleRoleToggle(u)}
+                      >
+                        {u.role === "admin" ? t("remove_admin") : t("make_admin")}
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: 12, color: "#aaa" }}>you</span>
+                    )}
                   </div>
                 </div>
               ))}

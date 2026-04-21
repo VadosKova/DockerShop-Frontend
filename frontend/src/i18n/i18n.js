@@ -48,6 +48,18 @@ export const translations = {
     loading: "Loading...",
     in_stock: "In stock",
     product_details: "Product Details",
+    manage_users: "Users",
+    make_admin: "Make Admin",
+    remove_admin: "Remove Admin",
+    role: "Role",
+    categories: {
+      Electronics: "Electronics",
+      Clothing: "Clothing",
+      Books: "Books",
+      Home: "Home",
+      Sports: "Sports",
+      Beauty: "Beauty",
+    },
   },
   uk: {
     change_language: "EN",
@@ -98,6 +110,18 @@ export const translations = {
     loading: "Завантаження...",
     in_stock: "В наявності",
     product_details: "Деталі товару",
+    manage_users: "Користувачі",
+    make_admin: "Зробити адміном",
+    remove_admin: "Зняти роль",
+    role: "Роль",
+    categories: {
+      Electronics: "Електроніка",
+      Clothing: "Одяг",
+      Books: "Книги",
+      Home: "Дім",
+      Sports: "Спорт",
+      Beauty: "Краса",
+    },
   }
 };
 

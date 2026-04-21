@@ -45,7 +45,6 @@ export default function ProductDetail() {
       <div className="detail-card">
         <div className="detail-card__image" style={{ background: `linear-gradient(135deg, ${color}22, ${color}55)` }}>
           <div className="detail-card__image-icon" style={{ color }}>◈</div>
-          <div className="detail-card__tag">{product.category}</div>
         </div>
 
         <div className="detail-card__info">
@@ -56,7 +55,7 @@ export default function ProductDetail() {
           <div className="detail-card__meta">
             <div className="detail-meta-item">
               <span className="detail-meta-item__label">{t("category")}</span>
-              <span className="detail-meta-item__value">{product.category}</span>
+              <span className="detail-meta-item__value">: {product.category}</span>
             </div>
           </div>
 

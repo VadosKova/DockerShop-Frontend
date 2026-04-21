@@ -36,7 +36,6 @@ export default function Login() {
         <div className="auth-deco__text">DockerShop</div>
       </div>
       <div className="auth-card">
-        <div className="auth-card__logo">◆</div>
         <h1 className="auth-card__title">{t("login")}</h1>
 
         <form className="auth-form" onSubmit={handleSubmit}>
